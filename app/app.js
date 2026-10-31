@@ -29,6 +29,10 @@
   var ctrlTimer = null;
   var tickTimer = null;
   var message = '';
+  var hls = null;         // hls.js: deja elegir la pista de audio (el reproductor nativo pone siempre el inglés)
+  var LANG_NAMES = { es: 'Español', en: 'English', de: 'Deutsch' };
+  var audioLang = 'es';
+  try { audioLang = localStorage.getItem('padeltv.audio') || 'es'; } catch (e) {}
 
   function $(id) { return document.getElementById(id); }
 
@@ -263,6 +267,42 @@
 
   function seekBy(d) { seekTo($('video').currentTime + d); }
 
+  /* ---------- Audio ---------- */
+
+  function audioList() {
+    var out = [], v = $('video');
+    if (hls) hls.audioTracks.forEach(function (t, i) { out.push({ lang: t.lang, i: i, on: hls.audioTrack === i }); });
+    else if (v.audioTracks) for (var i = 0; i < v.audioTracks.length; i++) out.push({ lang: v.audioTracks[i].language, i: i, on: v.audioTracks[i].enabled });
+    return out;
+  }
+
+  function useAudio(i) {
+    var v = $('video');
+    if (hls) { if (hls.audioTrack !== i) hls.audioTrack = i; return; }
+    if (v.audioTracks) for (var k = 0; k < v.audioTracks.length; k++) v.audioTracks[k].enabled = k === i;
+  }
+
+  function selectAudio() {
+    audioList().forEach(function (t) { if (t.lang === audioLang && !t.on) useAudio(t.i); });
+  }
+
+  function cycleAudio() {
+    var list = audioList();
+    if (list.length < 2) { message = 'Este vídeo solo tiene un idioma'; return; }
+    var cur = 0;
+    list.forEach(function (t, k) { if (t.on) cur = k; });
+    var next = list[(cur + 1) % list.length];
+    audioLang = next.lang;
+    try { localStorage.setItem('padeltv.audio', audioLang); } catch (e) {}
+    useAudio(next.i);
+  }
+
+  function audioLabel() {
+    var on = audioList().filter(function (t) { return t.on; })[0];
+    var lang = on ? on.lang : audioLang;
+    return 'Audio: ' + (LANG_NAMES[lang] || lang || '—');
+  }
+
   function buildButtons() {
     btns = [
       { label: '← Volver', act: stop },
@@ -272,7 +312,8 @@
       { id: 'pp', label: 'Pausa', act: togglePause },
       { label: '+10 s', act: function () { seekBy(10); } },
       { label: '+1 min', act: function () { seekBy(60); } },
-      { label: '+10 min', act: function () { seekBy(600); } }
+      { label: '+10 min', act: function () { seekBy(600); } },
+      { id: 'aud', label: 'Audio', act: cycleAudio }
     ];
     if (playing._state === 'live') btns.push({ label: 'Ir al directo ⇥', act: function () { seekTo(Infinity); } });
     btnFocus = 4;
@@ -285,6 +326,7 @@
     btns.forEach(function (b, i) {
       var el = $('b' + i);
       if (b.id === 'pp') el.textContent = v.paused ? '▶ Seguir' : '❚❚ Pausa';
+      if (b.id === 'aud') el.textContent = audioLabel();
       el.className = 'btn' + (i === btnFocus ? ' focus' : '');
     });
     var pct = 0, times = '';
@@ -326,11 +368,31 @@
     $('ctitle').textContent = c.title + (c._state === 'live' ? '  ● EN VIVO' : '');
     buildButtons();
     showCtrl();
-    v.onerror = function () { message = 'No se ha podido reproducir'; showCtrl(true); };
-    v.src = PLAY + c.id + '.m3u8';
-    v.load();
-    var p = v.play();
-    if (p && p.catch) p.catch(function () {});
+    var url = PLAY + c.id + '.m3u8';
+    if (window.Hls && Hls.isSupported()) {
+      hls = new Hls({ backBufferLength: 90 });
+      hls.on(Hls.Events.AUDIO_TRACKS_UPDATED, selectAudio);
+      hls.on(Hls.Events.MANIFEST_PARSED, function () {
+        selectAudio();
+        var p = v.play();
+        if (p && p.catch) p.catch(function () {});
+      });
+      hls.on(Hls.Events.ERROR, function (ev, d) {
+        if (!d.fatal) return;
+        if (d.type === Hls.ErrorTypes.NETWORK_ERROR) hls.startLoad();
+        else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) hls.recoverMediaError();
+        else { message = 'No se ha podido reproducir'; showCtrl(true); }
+      });
+      hls.loadSource(url);
+      hls.attachMedia(v);
+    } else {
+      v.onerror = function () { message = 'No se ha podido reproducir'; showCtrl(true); };
+      v.onloadedmetadata = selectAudio;
+      v.src = url;
+      v.load();
+      var p = v.play();
+      if (p && p.catch) p.catch(function () {});
+    }
     clearInterval(tickTimer);
     tickTimer = setInterval(function () { if (ctrlVisible()) updateCtrl(); }, 1000);
   }
@@ -339,7 +401,8 @@
     var v = $('video');
     clearInterval(tickTimer);
     clearTimeout(ctrlTimer);
-    v.onerror = null;
+    v.onerror = v.onloadedmetadata = null;
+    if (hls) { hls.destroy(); hls = null; }
     v.pause();
     v.removeAttribute('src');
     v.load();
