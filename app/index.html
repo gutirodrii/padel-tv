@@ -23,22 +23,32 @@
   #status { position:absolute; right:96px; top:60px; max-width:900px; text-align:right; font-size:24px; color:#9fb3e6; }
   #player { display:none; position:absolute; left:0; top:0; width:1920px; height:1080px; background:#000; }
   #player video { width:1920px; height:1080px; background:#000; }
-  #osd { position:absolute; left:0; top:0; right:0; padding:40px 80px; font-size:32px; background:linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,0)); }
-  #osd small { display:block; font-size:24px; color:#bbb; margin-top:6px; }
+  #ctrl { display:none; position:absolute; left:0; right:0; bottom:0; padding:120px 80px 56px; background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.85) 45%); }
+  #ctitle { font-size:36px; font-weight:bold; margin-bottom:20px; }
+  #bar { height:10px; border-radius:5px; background:rgba(255,255,255,.25); overflow:hidden; }
+  #fill { height:10px; width:0; background:#ffd400; }
+  #times { margin:14px 0 26px; font-size:26px; color:#ccd6f5; }
+  .btn { display:inline-block; margin-right:16px; padding:14px 26px; border-radius:10px; font-size:28px; background:rgba(255,255,255,.12); border:4px solid transparent; }
+  .btn.focus { background:#ffd400; color:#07112b; font-weight:bold; }
 </style>
 </head>
 <body>
 <div id="home">
   <header>
     <h1>Premier Padel</h1>
-    <p>Directos y repeticiones · ↑↓ cambiar fila · ←→ elegir · OK ver · Volver salir</p>
+    <p>Directos y todas las rondas · ↑↓ cambiar fila · ←→ elegir · OK ver</p>
   </header>
   <div id="rows"></div>
   <div id="status">Cargando…</div>
 </div>
 <div id="player">
   <video id="video" autoplay></video>
-  <div id="osd"></div>
+  <div id="ctrl">
+    <div id="ctitle"></div>
+    <div id="bar"><div id="fill"></div></div>
+    <div id="times"></div>
+    <div id="btns"></div>
+  </div>
 </div>
 <script src="app.js"></script>
 </body>
