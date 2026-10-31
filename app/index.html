@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pádel TV</title>
+<style>
+  html, body { margin:0; padding:0; width:1920px; height:1080px; overflow:hidden; background:#07112b; color:#fff; font-family: "SamsungOne", "Helvetica Neue", Arial, sans-serif; }
+  #home { position:absolute; left:0; top:0; width:1920px; height:1080px; }
+  header { padding:48px 96px 8px; }
+  header h1 { margin:0; font-size:56px; letter-spacing:1px; }
+  header p { margin:8px 0 0; font-size:26px; color:#9fb3e6; }
+  .row { padding:24px 96px 0; }
+  .row h2 { margin:0 0 16px; font-size:34px; color:#dbe5ff; }
+  .cards { white-space:nowrap; overflow:hidden; height:330px; }
+  .track { white-space:nowrap; -webkit-transition: -webkit-transform .2s; transition: transform .2s; }
+  .card { display:inline-block; vertical-align:top; width:440px; margin-right:28px; border-radius:14px; overflow:hidden; background:#13224f; border:5px solid transparent; }
+  .card.focus { border-color:#ffd400; -webkit-transform:scale(1.04); transform:scale(1.04); }
+  .card .img { width:440px; height:248px; background:#1d3170 center/cover no-repeat; position:relative; }
+  .card .badge { position:absolute; left:14px; top:14px; padding:4px 12px; border-radius:6px; font-size:22px; font-weight:bold; background:#e0003c; }
+  .card .badge.soon { background:#2c5be0; }
+  .card .t { padding:10px 14px 0; font-size:24px; white-space:normal; height:62px; overflow:hidden; line-height:31px; }
+  .empty { font-size:28px; color:#7f93c8; padding:20px 0; }
+  #status { position:absolute; right:96px; top:60px; max-width:900px; text-align:right; font-size:24px; color:#9fb3e6; }
+  #player { display:none; position:absolute; left:0; top:0; width:1920px; height:1080px; background:#000; }
+  #player video { width:1920px; height:1080px; background:#000; }
+  #osd { position:absolute; left:0; top:0; right:0; padding:40px 80px; font-size:32px; background:linear-gradient(rgba(0,0,0,.75), rgba(0,0,0,0)); }
+  #osd small { display:block; font-size:24px; color:#bbb; margin-top:6px; }
+</style>
+</head>
+<body>
+<div id="home">
+  <header>
+    <h1>Premier Padel</h1>
+    <p>Directos y repeticiones · ↑↓ cambiar fila · ←→ elegir · OK ver · Volver salir</p>
+  </header>
+  <div id="rows"></div>
+  <div id="status">Cargando…</div>
+</div>
+<div id="player">
+  <video id="video" autoplay></video>
+  <div id="osd"></div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

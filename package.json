@@ -1,0 +1,10 @@
+{
+  "name": "padel-tv",
+  "version": "1.0.0",
+  "description": "Premier Padel en directo y repeticiones (Red Bull TV) para teles Samsung antiguas",
+  "packageType": "app",
+  "appName": "Pádel TV",
+  "appPath": "app/index.html",
+  "keys": ["MediaPlay", "MediaPause", "MediaPlayPause", "MediaStop"],
+  "license": "MIT"
+}
